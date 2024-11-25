@@ -22,3 +22,9 @@ hs_err_pid*
 /redis-replicator.iml
 /.idea
 /bin/
+/RDBExport/rdb/
+
+/.DS_Store
+/RDBExport/.DS_Store
+/RDBExport/RDBExport.iml
+/RDBExport/src/.DS_Store
