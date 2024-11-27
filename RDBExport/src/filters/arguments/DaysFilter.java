@@ -1,8 +1,8 @@
 package filters.arguments;
 
 import filters.IFilter;
-import models.Context;
-import models.KeyInformation;
+import common.Context;
+import models.IKey;
 
 public class DaysFilter implements IFilter {
 
@@ -15,11 +15,11 @@ public class DaysFilter implements IFilter {
     }
 
     @Override
-    public boolean doFilter(KeyInformation keyInformation, Context context) {
-        if (context.getDays() > keyInformation.getExpireDatetime()) {
+    public boolean doFilter(IKey key, Context context) {
+        if (context.getDays() > key.getExpireDatetime()) {
             return false;
         }
 
-        return next == null || next.doFilter(keyInformation, context);
+        return next == null || next.doFilter(key, context);
     }
 }

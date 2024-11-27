@@ -12,9 +12,10 @@ import exceptions.IllegalRedisTypeException;
 import filters.FilterBuilder;
 import filters.IFilter;
 import io.OutputWriter;
+import models.IKey;
+import models.KeyFactory;
 import utils.ArgumentUtil;
-import models.Context;
-import models.KeyInformation;
+import common.Context;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +30,7 @@ public class Main {
 
         OutputWriter.buildOutputWriter(context.getResult());
 
-        List<KeyInformation> readyToOutput = Collections.synchronizedList(new LinkedList<>());
+        List<IKey> readyToOutput = Collections.synchronizedList(new LinkedList<>());
 
         ExecutorService executorService = Executors.newFixedThreadPool(context.getThreads());
         ArrayList<Future<?>> futures = new ArrayList<>();
@@ -53,7 +54,7 @@ public class Main {
         System.exit(0);
     }
 
-    private static void parseRdb(String rdbPathname, Context context, List<KeyInformation> readyToOutput) throws IOException {
+    private static void parseRdb(String rdbPathname, Context context, List<IKey> readyToOutput) throws IOException {
         IFilter filter = FilterBuilder.buildFilter(context);
 
         Replicator redisReplicator = new RedisReplicator(new File(rdbPathname), FileType.RDB, Configuration.defaultSetting());
@@ -64,13 +65,13 @@ public class Main {
                 KeyValuePair<?, ?> parsedKV = parser.parse((DumpKeyValuePair) event);
 
                 try {
-                    KeyInformation keyInformation = new KeyInformation(parsedKV);
+                    IKey key = KeyFactory.createKey(parsedKV);
 
-                    if (filter.doFilter(keyInformation, context)) {
+                    if (filter.doFilter(key, context)) {
                         if (context.isSorted()) {
-                            readyToOutput.add(keyInformation);
+                            readyToOutput.add(key);
                         } else {
-                            OutputWriter.writeNext(keyInformation);
+                            OutputWriter.writeNext(key);
                         }
                     }
                 }catch (IllegalKeyException e) {

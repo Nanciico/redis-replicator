@@ -1,12 +1,11 @@
 package filters;
 
-import models.Context;
-import models.KeyInformation;
+import common.Context;
+import models.IKey;
 
 public interface IFilter {
 
     IFilter setNext(IFilter filter);
 
-    boolean doFilter(KeyInformation keyInformation, Context context);
-
+    boolean doFilter(IKey key, Context context);
 }

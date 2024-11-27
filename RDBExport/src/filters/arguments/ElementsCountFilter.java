@@ -1,8 +1,8 @@
 package filters.arguments;
 
 import filters.IFilter;
-import models.Context;
-import models.KeyInformation;
+import common.Context;
+import models.IKey;
 
 public class ElementsCountFilter implements IFilter {
 
@@ -15,11 +15,11 @@ public class ElementsCountFilter implements IFilter {
     }
 
     @Override
-    public boolean doFilter(KeyInformation keyInformation, Context context) {
-        if (context.getElementsCount() > keyInformation.getNumElements()) {
+    public boolean doFilter(IKey key, Context context) {
+        if (context.getElementsCount() > key.getNumElements()) {
             return false;
         }
 
-        return next == null || next.doFilter(keyInformation, context);
+        return next == null || next.doFilter(key, context);
     }
 }

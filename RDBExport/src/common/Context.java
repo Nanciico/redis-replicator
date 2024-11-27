@@ -1,4 +1,4 @@
-package models;
+package common;
 
 public class Context {
 
@@ -27,6 +27,7 @@ public class Context {
 
 
     private final int threads;
+
 
     public Context(String[] keyspaces, int[] tenantIds, int bytes, float days, int elementsCount, boolean neverExpire,
                    String prefix, String suffix, String[] rdbs, String result, boolean sorted, int threads) {

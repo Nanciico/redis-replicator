@@ -1,8 +1,8 @@
 package filters.arguments;
 
 import filters.IFilter;
-import models.Context;
-import models.KeyInformation;
+import common.Context;
+import models.IKey;
 
 public class PrefixFilter implements IFilter {
 
@@ -15,11 +15,11 @@ public class PrefixFilter implements IFilter {
     }
 
     @Override
-    public boolean doFilter(KeyInformation keyInformation, Context context) {
-        if (!keyInformation.getKey().startsWith(context.getPrefix())) {
+    public boolean doFilter(IKey key, Context context) {
+        if (!key.getKey().startsWith(context.getPrefix())) {
             return false;
         }
 
-        return next == null || next.doFilter(keyInformation, context);
+        return next == null || next.doFilter(key, context);
     }
 }

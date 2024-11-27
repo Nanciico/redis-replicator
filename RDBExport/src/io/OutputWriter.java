@@ -2,7 +2,7 @@ package io;
 
 import com.opencsv.CSVWriterBuilder;
 import com.opencsv.ICSVWriter;
-import models.KeyInformation;
+import models.IKey;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -27,8 +27,8 @@ public class OutputWriter {
         }
     }
 
-    public static void writeNext(KeyInformation keyInformation) throws IOException {
-        String[] line = getLine(keyInformation);
+    public static void writeNext(IKey key) throws IOException {
+        String[] line = getLine(key);
 
         reentrantLock.lock();
         try {
@@ -39,26 +39,26 @@ public class OutputWriter {
         }
     }
 
-    public static void writeAll(List<KeyInformation> keyInformations) throws IOException {
+    public static void writeAll(List<IKey> keys) throws IOException {
         List<String[]> allLines = new ArrayList<>();
-        for (KeyInformation keyInformation : keyInformations) {
-            allLines.add(getLine(keyInformation));
+        for (IKey key : keys) {
+            allLines.add(getLine(key));
         }
 
         writer.writeAll(allLines);
         writer.flush();
     }
 
-    private static String[] getLine(KeyInformation keyInformation) {
+    private static String[] getLine(IKey key) {
         return new String[] {
-                keyInformation.getType().name().toLowerCase(),
-                keyInformation.getKeyspace(),
-                String.valueOf(keyInformation.getTenantId()),
-                keyInformation.getKey(),
-                String.valueOf(keyInformation.getSizeInBytes()),
-                String.valueOf(keyInformation.getNumElements()),
-                keyInformation.getClientProvider().name(),
-                keyInformation.getFormattedExpireDatetime()
+                key.getType().name().toLowerCase(),
+                key.getKeyspace(),
+                String.valueOf(key.getTenantId()),
+                key.getKey(),
+                String.valueOf(key.getSizeInBytes()),
+                String.valueOf(key.getNumElements()),
+                key.getClientProvider().name(),
+                key.getFormattedExpireDatetime()
         };
     }
 

@@ -1,8 +1,8 @@
 package filters.arguments;
 
 import filters.IFilter;
-import models.Context;
-import models.KeyInformation;
+import common.Context;
+import models.IKey;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -18,11 +18,11 @@ public class TenantIdFilter implements IFilter {
     }
 
     @Override
-    public boolean doFilter(KeyInformation keyInformation, Context context) {
-        if (Arrays.stream(context.getTenantIds()).noneMatch(tenantId -> Objects.equals(tenantId, keyInformation.getTenantId()))) {
+    public boolean doFilter(IKey key, Context context) {
+        if (Arrays.stream(context.getTenantIds()).noneMatch(tenantId -> Objects.equals(tenantId, key.getTenantId()))) {
             return false;
         }
 
-        return next == null || next.doFilter(keyInformation, context);
+        return next == null || next.doFilter(key, context);
     }
 }

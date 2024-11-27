@@ -1,7 +1,7 @@
 package filters;
 
-import models.Context;
-import models.KeyInformation;
+import common.Context;
+import models.IKey;
 
 public class Filter implements IFilter{
 
@@ -14,7 +14,7 @@ public class Filter implements IFilter{
     }
 
     @Override
-    public boolean doFilter(KeyInformation keyInformation, Context context) {
-        return next == null || next.doFilter(keyInformation, context);
+    public boolean doFilter(IKey key, Context context) {
+        return next == null || next.doFilter(key, context);
     }
 }

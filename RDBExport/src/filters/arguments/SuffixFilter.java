@@ -1,8 +1,8 @@
 package filters.arguments;
 
 import filters.IFilter;
-import models.Context;
-import models.KeyInformation;
+import common.Context;
+import models.IKey;
 
 public class SuffixFilter implements IFilter {
 
@@ -15,11 +15,11 @@ public class SuffixFilter implements IFilter {
     }
 
     @Override
-    public boolean doFilter(KeyInformation keyInformation, Context context) {
-        if (!keyInformation.getKey().endsWith(context.getSuffix())) {
+    public boolean doFilter(IKey key, Context context) {
+        if (!key.getKey().endsWith(context.getSuffix())) {
             return false;
         }
 
-        return next == null || next.doFilter(keyInformation, context);
+        return next == null || next.doFilter(key, context);
     }
 }
