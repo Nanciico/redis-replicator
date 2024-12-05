@@ -27,6 +27,7 @@ public class KeyValuePair<K, V> extends AbstractEvent {
     private static final long serialVersionUID = 1L;
 
     protected DB db;
+    protected SlotInfo slotInfo;
     protected int valueRdbType;
     protected ExpiredType expiredType = ExpiredType.NONE;
     protected Long expiredValue;
@@ -97,6 +98,14 @@ public class KeyValuePair<K, V> extends AbstractEvent {
 
     public void setDb(DB db) {
         this.db = db;
+    }
+
+    public SlotInfo getSlotInfo() {
+        return slotInfo;
+    }
+
+    public void setSlotInfo(SlotInfo slotInfo) {
+        this.slotInfo = slotInfo;
     }
 
     /**

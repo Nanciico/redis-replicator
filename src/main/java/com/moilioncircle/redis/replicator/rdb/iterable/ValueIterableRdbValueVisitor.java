@@ -16,9 +16,8 @@
 
 package com.moilioncircle.redis.replicator.rdb.iterable;
 
-import static com.moilioncircle.redis.replicator.Constants.QUICKLIST_NODE_CONTAINER_PACKED;
-import static com.moilioncircle.redis.replicator.Constants.QUICKLIST_NODE_CONTAINER_PLAIN;
-import static com.moilioncircle.redis.replicator.Constants.RDB_LOAD_NONE;
+import static com.moilioncircle.redis.replicator.Constants.*;
+import static com.moilioncircle.redis.replicator.Constants.RDB_LOAD_HFLD_TTL;
 import static com.moilioncircle.redis.replicator.rdb.BaseRdbParser.StringHelper.listPackEntry;
 
 import java.io.IOException;
@@ -672,5 +671,77 @@ public class ValueIterableRdbValueVisitor extends DefaultRdbValueVisitor {
                 throw new UncheckedIOException(e);
             }
         }
+    }
+
+    @Override
+    public <T> T applyHashMetadata(RedisInputStream in, int version) throws IOException {
+        BaseRdbParser parser = new BaseRdbParser(in);
+
+        long minExpire = parser.rdbLoadMillisecondTime();
+
+        long len = parser.rdbLoadLen().len;
+        Iterator<Map.Entry<byte[], byte[]>> val = new Iter<Map.Entry<byte[], byte[]>>(len, parser) {
+            @Override
+            public boolean hasNext() {
+                return condition > 0;
+            }
+
+            @Override
+            public Map.Entry<byte[], byte[]> next() {
+                try {
+                    long ttl = parser.rdbLoadLen().len;
+                    byte[] field = parser.rdbLoadEncodedStringObject().first();
+                    byte[] value = parser.rdbLoadEncodedStringObject().first();
+                    condition--;
+                    return new AbstractMap.SimpleEntry<>(field, value);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+        };
+        return (T) val;
+    }
+
+    @Override
+    public <T> T applyHashListPackEx(RedisInputStream in, int version) throws IOException {
+        BaseRdbParser parser = new BaseRdbParser(in);
+
+        long minExpire = parser.rdbLoadMillisecondTime();
+
+        RedisInputStream listPack = new RedisInputStream(parser.rdbLoadPlainStringObject());
+        listPack.skip(4); // total-bytes
+        int len = listPack.readInt(2);
+        Iterator<Map.Entry<byte[], byte[]>> val = new Iter<Map.Entry<byte[], byte[]>>(len, null) {
+            @Override
+            public boolean hasNext() {
+                if (condition > 0) return true;
+                try {
+                    int lpend = listPack.read();
+                    if (lpend != 255) {
+                        throw new AssertionError("listpack expect 255 but " + lpend);
+                    }
+                    return false;
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+
+            @Override
+            public Map.Entry<byte[], byte[]> next() {
+                try {
+
+                    byte[] field = listPackEntry(listPack);
+                    condition--;
+                    byte[] value = listPackEntry(listPack);
+                    condition--;
+                    byte[] ttl = listPackEntry(listPack);
+                    condition--;
+                    return new AbstractMap.SimpleEntry<>(field, value);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+        };
+        return (T) val;
     }
 }

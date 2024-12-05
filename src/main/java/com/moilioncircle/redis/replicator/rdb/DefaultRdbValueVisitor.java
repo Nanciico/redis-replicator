@@ -1,13 +1,7 @@
 
 package com.moilioncircle.redis.replicator.rdb;
 
-import static com.moilioncircle.redis.replicator.Constants.MODULE_SET;
-import static com.moilioncircle.redis.replicator.Constants.QUICKLIST_NODE_CONTAINER_PACKED;
-import static com.moilioncircle.redis.replicator.Constants.QUICKLIST_NODE_CONTAINER_PLAIN;
-import static com.moilioncircle.redis.replicator.Constants.RDB_LOAD_NONE;
-import static com.moilioncircle.redis.replicator.Constants.RDB_MODULE_OPCODE_EOF;
-import static com.moilioncircle.redis.replicator.Constants.STREAM_ITEM_FLAG_DELETED;
-import static com.moilioncircle.redis.replicator.Constants.STREAM_ITEM_FLAG_SAMEFIELDS;
+import static com.moilioncircle.redis.replicator.Constants.*;
 import static com.moilioncircle.redis.replicator.rdb.BaseRdbParser.StringHelper.listPackEntry;
 
 import java.io.IOException;
@@ -673,5 +667,59 @@ public class DefaultRdbValueVisitor extends RdbValueVisitor {
         stream.setGroups(groups);
     
         return (T) stream;
+    }
+
+    @Override
+    public <T> T applyHashMetadata(RedisInputStream in, int version) throws IOException {
+        BaseRdbParser parser = new BaseRdbParser(in);
+
+        long minExpire = parser.rdbLoadMillisecondTime();
+
+        long len = parser.rdbLoadLen().len;
+        ByteArrayMap map = new ByteArrayMap();
+        while (len > 0) {
+            long ttl = parser.rdbLoadLen().len;
+            long expireAt = (ttl != 0) ? (ttl + minExpire - 1) : 0;
+
+            byte[] field = expireAt == 0 ?
+                    parser.rdbGenericLoadStringObject(RDB_LOAD_HFLD).first() :
+                    parser.rdbGenericLoadStringObject(RDB_LOAD_HFLD_TTL).first();
+
+            byte[] value = parser.rdbLoadPlainStringObject().first();
+
+            map.put(field, value);
+
+            len--;
+        }
+
+        return (T) map;
+    }
+
+    public <T> T applyHashListPackEx(RedisInputStream in, int version) throws IOException {
+        BaseRdbParser parser = new BaseRdbParser(in);
+
+        long minExpire = parser.rdbLoadMillisecondTime();
+
+        RedisInputStream listPack = new RedisInputStream(parser.rdbLoadPlainStringObject());
+        ByteArrayMap map = new ByteArrayMap();
+        listPack.skip(4); // total-bytes
+        int len = listPack.readInt(2);
+        while (len > 0) {
+            byte[] field = listPackEntry(listPack);
+            len--;
+            byte[] value = listPackEntry(listPack);
+            len--;
+            byte[] ttl = listPackEntry(listPack);
+            len--;
+
+            map.put(field, value);
+        }
+
+        int lpend = listPack.read(); // lp-end
+        if (lpend != 255) {
+            throw new AssertionError("listpack expect 255 but " + lpend);
+        }
+
+        return (T) map;
     }
 }

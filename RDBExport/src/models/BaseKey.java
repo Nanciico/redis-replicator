@@ -87,6 +87,8 @@ public abstract class BaseKey implements IKey {
             case RDB_TYPE_HASH_ZIPMAP:
             case RDB_TYPE_HASH_ZIPLIST:
             case RDB_TYPE_HASH_LISTPACK:
+            case RDB_TYPE_HASH_METADATA:
+            case RDB_TYPE_HASH_LISTPACK_EX:
                 this.type = RedisType.Hash;
                 ByteArrayMap valueBytes4 = (ByteArrayMap) parsedKV.getValue();
                 this.sizeInBytes = CalculateBytesUtil.calculateBytes(valueBytes4);

@@ -16,34 +16,7 @@
 
 package com.moilioncircle.redis.replicator.rdb.dump;
 
-import static com.moilioncircle.redis.replicator.Constants.MODULE_SET;
-import static com.moilioncircle.redis.replicator.Constants.QUICKLIST_NODE_CONTAINER_PACKED;
-import static com.moilioncircle.redis.replicator.Constants.QUICKLIST_NODE_CONTAINER_PLAIN;
-import static com.moilioncircle.redis.replicator.Constants.RDB_LOAD_NONE;
-import static com.moilioncircle.redis.replicator.Constants.RDB_MODULE_OPCODE_EOF;
-import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_FUNCTION;
-import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_FUNCTION2;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_LISTPACK;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_ZIPLIST;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_ZIPMAP;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_LIST;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_LIST_QUICKLIST;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_LIST_QUICKLIST_2;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_LIST_ZIPLIST;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_MODULE;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_MODULE_2;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_SET;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_SET_INTSET;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_SET_LISTPACK;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_STREAM_LISTPACKS;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_STREAM_LISTPACKS_2;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_STREAM_LISTPACKS_3;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_STRING;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_ZSET;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_ZSET_2;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_ZSET_LISTPACK;
-import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_ZSET_ZIPLIST;
+import static com.moilioncircle.redis.replicator.Constants.*;
 import static com.moilioncircle.redis.replicator.rdb.BaseRdbParser.StringHelper.listPackEntry;
 import static com.moilioncircle.redis.replicator.util.CRC64.crc64;
 import static com.moilioncircle.redis.replicator.util.CRC64.longToByteArray;
@@ -856,5 +829,40 @@ public class DumpRdbValueVisitor extends DefaultRdbValueVisitor {
             }
             return (T) listener.getBytes();
         }
+    }
+
+    @Override
+    public <T> T applyHashMetadata(RedisInputStream in, int version) throws IOException {
+        DefaultRawByteListener listener = new DefaultRawByteListener((byte) RDB_TYPE_HASH_METADATA, version);
+        replicator.addRawByteListener(listener);
+        try {
+            SkipRdbParser skipParser = new SkipRdbParser(in);
+            skipParser.rdbLoadMillisecondTime();
+
+            long len = skipParser.rdbLoadLen().len;
+            while (len > 0) {
+                long ttl = skipParser.rdbLoadLen().len;
+                skipParser.rdbLoadEncodedStringObject();
+                skipParser.rdbLoadEncodedStringObject();
+                len--;
+            }
+        } finally {
+            replicator.removeRawByteListener(listener);
+        }
+        return (T) listener.getBytes();
+    }
+
+    @Override
+    public <T> T applyHashListPackEx(RedisInputStream in, int version) throws IOException {
+        DefaultRawByteListener listener = new DefaultRawByteListener((byte) RDB_TYPE_HASH_LISTPACK_EX, version);
+        replicator.addRawByteListener(listener);
+        try {
+            SkipRdbParser skipParser = new SkipRdbParser(in);
+            skipParser.rdbLoadMillisecondTime();
+            skipParser.rdbLoadPlainStringObject();
+        } finally {
+            replicator.removeRawByteListener(listener);
+        }
+        return (T) listener.getBytes();
     }
 }

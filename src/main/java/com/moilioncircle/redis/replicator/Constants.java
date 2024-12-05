@@ -46,6 +46,8 @@ public class Constants {
     public static final int RDB_LOAD_NONE = 0;
     public static final int RDB_LOAD_ENC = 1 << 0;
     public static final int RDB_LOAD_PLAIN = 1 << 1;
+    public static final int RDB_LOAD_HFLD = 1 << 3;
+    public static final int RDB_LOAD_HFLD_TTL = 1 << 4;
 
     /**
      * string encoding
@@ -58,6 +60,7 @@ public class Constants {
     /**
      * rdb protocol
      */
+    public static final int RDB_OPCODE_SLOT_INFO = 244;
     public static final int RDB_OPCODE_FUNCTION = 246;
     public static final int RDB_OPCODE_FUNCTION2 = 245;
     public static final int RDB_OPCODE_MODULE_AUX = 247;
@@ -94,6 +97,10 @@ public class Constants {
     public static final int RDB_TYPE_STREAM_LISTPACKS_2 = 19;
     public static final int RDB_TYPE_SET_LISTPACK = 20; /* since redis 7.2 */
     public static final int RDB_TYPE_STREAM_LISTPACKS_3 = 21; /* since redis 7.2 */
+    public static final int RDB_TYPE_HASH_METADATA_PRE_GA = 22; /* Hash with HFEs. Doesn't attach min TTL at start (7.4 RC) */
+    public static final int RDB_TYPE_HASH_LISTPACK_EX_PRE_GA = 23; /* Hash LP with HFEs. Doesn't attach min TTL at start (7.4 RC) */
+    public static final int RDB_TYPE_HASH_METADATA = 24; /* Hash with HFEs. Attach min TTL at start */
+    public static final int RDB_TYPE_HASH_LISTPACK_EX = 25; /* Hash LP with HFEs. Attach min TTL at start */
 
     /**
      * Module serialized values sub opcodes

@@ -343,4 +343,28 @@ public class SkipRdbValueVisitor extends DefaultRdbValueVisitor {
         }
         return null;
     }
+
+    @Override
+    public <T> T applyHashMetadata(RedisInputStream in, int version) throws IOException {
+        SkipRdbParser skip = new SkipRdbParser(in);
+
+        skip.rdbLoadMillisecondTime();
+
+        long len = skip.rdbLoadLen().len;
+        while (len > 0) {
+            long ttl = skip.rdbLoadLen().len;
+            skip.rdbLoadPlainStringObject();
+            skip.rdbLoadPlainStringObject();
+            len--;
+        }
+        return null;
+    }
+
+    @Override
+    public <T> T applyHashListPackEx(RedisInputStream in, int version) throws IOException {
+        SkipRdbParser skip = new SkipRdbParser(in);
+        skip.rdbLoadMillisecondTime();
+        skip.rdbLoadPlainStringObject();
+        return null;
+    }
 }

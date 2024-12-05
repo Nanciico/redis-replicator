@@ -16,28 +16,13 @@
 
 package com.moilioncircle.redis.replicator.rdb;
 
-import static com.moilioncircle.redis.replicator.Constants.RDB_14BITLEN;
-import static com.moilioncircle.redis.replicator.Constants.RDB_32BITLEN;
-import static com.moilioncircle.redis.replicator.Constants.RDB_64BITLEN;
-import static com.moilioncircle.redis.replicator.Constants.RDB_6BITLEN;
-import static com.moilioncircle.redis.replicator.Constants.RDB_ENCVAL;
-import static com.moilioncircle.redis.replicator.Constants.RDB_ENC_INT16;
-import static com.moilioncircle.redis.replicator.Constants.RDB_ENC_INT32;
-import static com.moilioncircle.redis.replicator.Constants.RDB_ENC_INT8;
-import static com.moilioncircle.redis.replicator.Constants.RDB_ENC_LZF;
-import static com.moilioncircle.redis.replicator.Constants.RDB_LOAD_ENC;
-import static com.moilioncircle.redis.replicator.Constants.RDB_LOAD_PLAIN;
-import static com.moilioncircle.redis.replicator.Constants.ZIP_INT_16B;
-import static com.moilioncircle.redis.replicator.Constants.ZIP_INT_24B;
-import static com.moilioncircle.redis.replicator.Constants.ZIP_INT_32B;
-import static com.moilioncircle.redis.replicator.Constants.ZIP_INT_64B;
-import static com.moilioncircle.redis.replicator.Constants.ZIP_INT_8B;
-
 import java.io.IOException;
 
 import com.moilioncircle.redis.replicator.io.RedisInputStream;
 import com.moilioncircle.redis.replicator.util.ByteArray;
 import com.moilioncircle.redis.replicator.util.Lzf;
+
+import static com.moilioncircle.redis.replicator.Constants.*;
 
 /**
  * @author Leon Chen
@@ -200,6 +185,7 @@ public class BaseRdbParser {
     public ByteArray rdbGenericLoadStringObject(int flags) throws IOException {
         boolean plain = (flags & RDB_LOAD_PLAIN) != 0;
         boolean encode = (flags & RDB_LOAD_ENC) != 0;
+        boolean hfld = (flags & (RDB_LOAD_HFLD | RDB_LOAD_HFLD_TTL)) != 0;
         Len lenObj = rdbLoadLen();
         long len = (int) lenObj.len;
         boolean isencoded = lenObj.encoded;
@@ -219,6 +205,8 @@ public class BaseRdbParser {
             return in.readBytes(len);
         } else if (encode) {
             // createStringObject(NULL,len)
+            return in.readBytes(len);
+        } else if (hfld) {
             return in.readBytes(len);
         } else {
             // createRawStringObject(NULL,len);

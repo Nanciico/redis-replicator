@@ -16,9 +16,6 @@
 
 package com.moilioncircle.redis.replicator.rdb.skip;
 
-import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_FREQ;
-import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_IDLE;
-
 import java.io.IOException;
 
 import com.moilioncircle.redis.replicator.Replicator;
@@ -26,9 +23,9 @@ import com.moilioncircle.redis.replicator.event.Event;
 import com.moilioncircle.redis.replicator.io.RedisInputStream;
 import com.moilioncircle.redis.replicator.rdb.DefaultRdbVisitor;
 import com.moilioncircle.redis.replicator.rdb.RdbValueVisitor;
-import com.moilioncircle.redis.replicator.rdb.datatype.ContextKeyValuePair;
-import com.moilioncircle.redis.replicator.rdb.datatype.DB;
-import com.moilioncircle.redis.replicator.rdb.datatype.Function;
+import com.moilioncircle.redis.replicator.rdb.datatype.*;
+
+import static com.moilioncircle.redis.replicator.Constants.*;
 
 /**
  * @author Leon Chen
@@ -133,6 +130,15 @@ public class SkipRdbVisitor extends DefaultRdbVisitor {
     @Override
     public Event applyModuleAux(RedisInputStream in, int version) throws IOException {
         return super.applyModuleAux(in, version);
+    }
+
+    @Override
+    public SlotInfo applySlotInfo(RedisInputStream in, int version) throws IOException {
+        SkipRdbParser parser = new SkipRdbParser(in);
+        parser.rdbLoadLen();
+        parser.rdbLoadLen();
+        parser.rdbLoadLen();
+        return null;
     }
 
     @Override
@@ -300,6 +306,22 @@ public class SkipRdbVisitor extends DefaultRdbVisitor {
         SkipRdbParser parser = new SkipRdbParser(in);
         parser.rdbLoadEncodedStringObject();
         valueVisitor.applyStreamListPacks3(in, version);
+        return null;
+    }
+
+    @Override
+    public Event applyHashMetadata(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+        SkipRdbParser parser = new SkipRdbParser(in);
+        parser.rdbLoadEncodedStringObject();
+        valueVisitor.applyHashMetadata(in, version);
+        return null;
+    }
+
+    @Override
+    public Event applyHashListPackEx(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+        SkipRdbParser parser = new SkipRdbParser(in);
+        parser.rdbLoadEncodedStringObject();
+        valueVisitor.applyHashListPackEx(in, version);
         return null;
     }
 }

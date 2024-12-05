@@ -25,7 +25,7 @@ import com.moilioncircle.redis.replicator.io.RedisInputStream;
  * @since 3.1.0
  */
 public abstract class RdbValueVisitor {
-    
+
     public <T> T applyFunction(RedisInputStream in, int version) throws IOException {
         throw new UnsupportedOperationException("must implement this method.");
     }
@@ -115,6 +115,22 @@ public abstract class RdbValueVisitor {
     }
     
     public <T> T applyStreamListPacks3(RedisInputStream in, int version) throws IOException {
+        throw new UnsupportedOperationException("must implement this method.");
+    }
+
+    public <T> T applyHashMetadataPreGa(RedisInputStream in, int version) throws IOException {
+        throw new UnsupportedOperationException("must implement this method.");
+    }
+
+    public <T> T applyHashListPackExPreGa(RedisInputStream in, int version) throws IOException {
+        throw new UnsupportedOperationException("must implement this method.");
+    }
+
+    public <T> T applyHashMetadata(RedisInputStream in, int version) throws IOException {
+        throw new UnsupportedOperationException("must implement this method.");
+    }
+
+    public <T> T applyHashListPackEx(RedisInputStream in, int version) throws IOException {
         throw new UnsupportedOperationException("must implement this method.");
     }
 }
